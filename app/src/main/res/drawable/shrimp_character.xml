@@ -1,0 +1,71 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="200dp"
+    android:height="200dp"
+    android:viewportWidth="200"
+    android:viewportHeight="200">
+    
+    <ellipse
+        android:fillColor="#FFFFFF"
+        android:cx="100"
+        android:cy="80"
+        android:rx="50"
+        android:ry="45"/>
+    
+    <circle
+        android:fillColor="#000000"
+        android:cx="100"
+        android:cy="50"
+        android:r="25"/>
+    
+    <circle
+        android:fillColor="#8B4513"
+        android:cx="100"
+        android:cy="35"
+        android:r="35"/>
+    
+    <path
+        android:fillColor="#000000"
+        android:pathData="M85 65 Q100 85 115 65"/>
+    
+    <rect
+        android:fillColor="#4A5568"
+        android:x="60"
+        android:y="120"
+        android:width="80"
+        android:height="70"
+        android:rx="8"/>
+    
+    <rect
+        android:fillColor="#718096"
+        android:x="75"
+        android:y="130"
+        android:width="50"
+        android:height="50"
+        android:rx="4"/>
+    
+    <circle
+        android:fillColor="#8B4513"
+        android:cx="100"
+        android:cy="160"
+        android:r="8"/>
+    
+    <path
+        android:fillColor="#DC143C"
+        android:pathData="M100 168 L100 180 M98 172 L100 180 L102 172"/>
+    
+    <rect
+        android:fillColor="#1A1A2E"
+        android:x="65"
+        android:y="185"
+        android:width="20"
+        android:height="12"
+        android:rx="2"/>
+    
+    <rect
+        android:fillColor="#1A1A2E"
+        android:x="115"
+        android:y="185"
+        android:width="20"
+        android:height="12"
+        android:rx="2"/>
+</vector>

@@ -1,0 +1,16 @@
+<resources>
+    <color name="primary">#FF6B6B</color>
+    <color name="primaryVariant">#FF5252</color>
+    <color name="onPrimary">#FFFFFF</color>
+    <color name="secondary">#FFD93D</color>
+    <color name="secondaryVariant">#FFC107</color>
+    <color name="onSecondary">#000000</color>
+    <color name="background">#1a1a2e</color>
+    <color name="onBackground">#ffffff</color>
+    <color name="surface">#16213e</color>
+    <color name="onSurface">#ffffff</color>
+    <color name="error">#FF5252</color>
+    <color name="onError">#FFFFFF</color>
+    <color name="chatBubbleUser">#4ecdc4</color>
+    <color name="chatBubbleShrimp">#ff6b6b</color>
+</resources>
