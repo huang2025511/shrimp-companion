@@ -3,75 +3,64 @@ name: Build APK
 on:
   push:
     branches: [ master ]
-  pull_request:
-    branches: [ master ]
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
-    - name: Set up JDK 17
-      uses: actions/setup-java@v3
+    - name: Setup Java JDK
+      uses: actions/setup-java@v4
       with:
         java-version: '17'
         distribution: 'temurin'
         cache: 'gradle'
 
-    - name: Set up Android SDK
-      uses: android-actions/setup-android@v2
-      with:
-        api-level: 34
-        build-tools: 34.0.0
-        ndk: ''
-        cmake: ''
-
     - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
+      run: chmod +x ./gradlew
 
-    - name: Initialize Gradle Wrapper
+    - name: Create Gradle Wrapper Properties
       run: |
-        # Create gradle wrapper properties if missing
         mkdir -p gradle/wrapper
         cat > gradle/wrapper/gradle-wrapper.properties << 'EOF'
 distributionBase=GRADLE_USER_HOME
 distributionPath=wrapper/dists
-distributionUrl=https\://services.gradle.org/distributions/gradle-8.0-bin.zip
+distributionUrl=https\://services.gradle.org/distributions/gradle-8.4-bin.zip
 networkTimeout=10000
-validateDistributionUrl=true
 zipStoreBase=GRADLE_USER_HOME
 zipStorePath=wrapper/dists
 EOF
-        
-        # Download wrapper jar
-        curl -L -o gradle/wrapper/gradle-wrapper.jar \
-          https://raw.githubusercontent.com/gradle/gradle/v8.0.0/gradle/wrapper/gradle-wrapper.jar 2>/dev/null || \
-        curl -L -o gradle/wrapper/gradle-wrapper.jar \
-          https://services.gradle.org/distributions/gradle-8.0-bin.zip && \
-        unzip -o -j gradle/wrapper/gradle-wrapper.jar -d gradle/wrapper/ lib/gradle-wrapper-*.jar || true
+
+    - name: Download Gradle Wrapper JAR
+      run: |
+        # Try multiple sources for the wrapper jar
+        curl -L --retry 3 --retry-delay 5 -o gradle/wrapper/gradle-wrapper.jar \
+          "https://raw.githubusercontent.com/gradle/gradle/v8.4.0/gradle/wrapper/gradle-wrapper.jar" || \
+        curl -L --retry 3 --retry-delay 5 -o gradle/wrapper/gradle-wrapper.jar \
+          "https://github.com/gradle/gradle/raw/v8.4.0/gradle/wrapper/gradle-wrapper.jar" || \
+        echo "Will use system gradle"
 
     - name: Build with Gradle
       run: |
-        # Accept Android SDK licenses
-        yes | sdkmanager --licenses >/dev/null 2>&1 || true
-        
-        # Build APK
-        ./gradlew --no-daemon --stacktrace assembleDebug assembleRelease
+        # Use system gradle as fallback
+        if [ ! -f gradle/wrapper/gradle-wrapper.jar ]; then
+          gradle wrapper --gradle-version 8.4
+        fi
+        ./gradlew assembleDebug --stacktrace --no-daemon
 
     - name: Upload Debug APK
-      uses: actions/upload-artifact@v3
+      if: success()
+      uses: actions/upload-artifact@v4
       with:
         name: app-debug
         path: app/build/outputs/apk/debug/app-debug.apk
-        if-no-files-found: warn
 
-    - name: Upload Release APK
-      uses: actions/upload-artifact@v3
-      with:
-        name: app-release-unsigned
-        path: app/build/outputs/apk/release/app-release-unsigned.apk
-        if-no-files-found: warn
+    - name: Show Build Output
+      if: failure()
+      run: |
+        echo "Build failed. Checking for errors..."
+        cat app/build/outputs/*/logs/*.log 2>/dev/null || echo "No log files found"
