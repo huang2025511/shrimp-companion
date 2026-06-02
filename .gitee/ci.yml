@@ -1,0 +1,47 @@
+# Gitee Go 构建配置
+name: Build Android APK
+
+image: openjdk:17-jdk-slim
+
+stages:
+  - name: 检查代码
+    script:
+      - ls -la
+
+  - name: 构建APK
+    script:
+      - chmod +x gradlew
+      - apt-get update && apt-get install -y curl unzip wget
+      - |
+        # 安装 Android SDK
+        export ANDROID_HOME=/opt/android-sdk
+        mkdir -p $ANDROID_HOME
+        mkdir -p $ANDROID_HOME/cmdline-tools
+        mkdir -p $ANDROID_HOME/platforms
+        mkdir -p $ANDROID_HOME/build-tools
+        
+        # 下载 Android 命令行工具
+        cd /opt
+        wget -q -O android-cmdline.zip https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip
+        unzip -q android-cmdline.zip
+        mv cmdline-tools $ANDROID_HOME/
+        cd -
+        
+        # 设置环境
+        export PATH=$PATH:$ANDROID_HOME/cmdline-tools/latest/bin
+        mkdir -p $ANDROID_HOME/licenses
+        echo "24333f8a63b6825ea9c5514f83c2829b004d1fee" > $ANDROID_HOME/licenses/android-sdk-license
+        echo "d56f5187479451eabf01fb78af6dfcb131a6481e" >> $ANDROID_HOME/licenses/android-sdk-license
+        
+        # 安装 SDK 组件
+        yes | sdkmanager "platforms;android-34" "build-tools;34.0.0" "platform-tools" || true
+        
+        # 构建
+        ./gradlew assembleDebug --stacktrace --no-daemon
+    cache:
+      paths:
+        - ~/.gradle/caches
+        - ~/.gradle/wrapper
+        
+    artifacts:
+      - app/build/outputs/apk/debug/app-debug.apk
