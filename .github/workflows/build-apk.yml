@@ -3,14 +3,12 @@ name: Build Android APK
 on:
   push:
     branches: [ master, main ]
-  pull_request:
-    branches: [ master, main ]
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    
+
     steps:
     - name: Checkout
       uses: actions/checkout@v4
@@ -25,30 +23,8 @@ jobs:
     - name: Make gradlew executable
       run: chmod +x ./gradlew
 
-    - name: Setup Gradle
-      run: |
-        mkdir -p gradle/wrapper
-        cat > gradle/wrapper/gradle-wrapper.properties << 'EOF'
-distributionBase=GRADLE_USER_HOME
-distributionPath=wrapper/dists
-distributionUrl=https\://services.gradle.org/distributions/gradle-8.4-bin.zip
-networkTimeout=60000
-zipStoreBase=GRADLE_USER_HOME
-zipStorePath=wrapper/dists
-EOF
-        
-        # Download wrapper JAR
-        curl -L -o gradle/wrapper/gradle-wrapper.jar \
-          https://github.com/gradle/gradle/raw/v8.4.0/gradle/wrapper/gradle-wrapper.jar || true
-
-    - name: Build with Gradle
-      run: |
-        # Try gradlew first, fallback to system gradle
-        if [ -f gradle/wrapper/gradle-wrapper.jar ]; then
-          ./gradlew assembleDebug --no-daemon --stacktrace
-        else
-          gradle assembleDebug --no-daemon --stacktrace
-        fi
+    - name: Build APK
+      run: ./gradlew assembleDebug --no-daemon --stacktrace
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
@@ -57,8 +33,8 @@ EOF
         path: app/build/outputs/apk/debug/app-debug.apk
         retention-days: 7
 
-    - name: Display APK info
+    - name: Verify APK
       if: success()
       run: |
-        echo "✅ Build successful!"
         ls -lh app/build/outputs/apk/debug/app-debug.apk
+        echo "APK built successfully!"
